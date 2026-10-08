@@ -1,0 +1,12 @@
+CREATE TABLE HighScoreEntity (
+    id INTEGER NOT NULL PRIMARY KEY,
+    bestScore INTEGER NOT NULL,
+    totalQuestions INTEGER NOT NULL
+);
+
+selectHighScore:
+SELECT * FROM HighScoreEntity WHERE id = 0;
+
+insertOrReplaceHighScore:
+INSERT OR REPLACE INTO HighScoreEntity(id, bestScore, totalQuestions)
+VALUES (0, ?, ?);
