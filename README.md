@@ -1,26 +1,76 @@
-This is a Kotlin Multiplatform project targeting Android.
+# Quiz
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Timed trivia quiz game. Questions come from the Open Trivia Database,
+best scores are stored locally.
+Built with Kotlin Multiplatform and Compose Multiplatform (Android target).
 
-### Running the apps
+<p>
+  <img src="docs/start.png" width="23%" alt="Start" />
+  <img src="docs/playing.png" width="23%" alt="Playing" />
+  <img src="docs/finished.png" width="23%" alt="Finished" />
+  <img src="docs/error.png" width="23%" alt="Error" />
+</p>
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+## Features
 
-- Android app: `./gradlew :androidApp:assembleDebug`
+- Questions loaded from the Open Trivia Database (no API key required)
+- Four answer options per question and a per-question countdown timer
+- Speed-based scoring
+- Results screen with the best score
+- Loading and error states with a Retry button
+- Score history stored locally
 
-### Running tests
+## Tech stack
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+- Kotlin Multiplatform, Compose Multiplatform
+- Ktor Client with kotlinx-serialization for networking
+- SQLDelight for local score storage
+- Koin for dependency injection
+- Coroutines and StateFlow
+- Unit tests for the reducer
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
+## Architecture
 
----
+Three layers, dependencies point inward:
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+- `domain`: models and rules (`Question`, `HighScore`, `QuizRules`)
+- `data`: `TriviaApi` (Ktor), DTOs and mappers, `QuizRepository`,
+  `HighScoreRepository` (SQLDelight)
+- `presentation`: MVI. A sealed `QuizState` (Idle, Loading, Playing, Finished, Error),
+  a sealed `QuizIntent`, a pure `QuizReducer` and a `QuizViewModel`.
+  A router composable maps each state to a screen.
+
+## Project structure
+
+    shared/src/commonMain/kotlin/org/example/quiz/
+    ├── domain/        # models and rules
+    ├── data/          # API, repositories, database
+    └── presentation/  # state, intents, reducer, ViewModel, UI screens
+
+## Run
+
+Open the project in Android Studio and run the `androidApp` configuration,
+or build a debug APK:
+
+    ./gradlew :androidApp:assembleDebug
+
+Run unit tests:
+
+    ./gradlew :shared:testAndroidHostTest
+
+An internet connection is required to load questions.
+
+## Status
+
+- Android: tested on an emulator and a physical device.
+- Not handled yet: screen rotation / configuration changes.
+- Only Android is set up in this project.
+
+## What I learned
+
+- Building a network layer with Ktor and mapping DTOs to domain models
+- Modeling screen phases as a sealed state and reducing intents to new states
+- Wiring Koin across common and platform-specific modules
+- Writing my first unit tests
+- Debugging real build issues: mismatched dependency versions and a missing
+  INTERNET permission
